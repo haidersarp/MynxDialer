@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  # ─── MySQL ───────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: mynxdialer_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-changeme}
+      MYSQL_DATABASE: dialer
+      MYSQL_USER: dialer
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-changeme}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "3306:3306"
+    networks:
+      - dialer_net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "dialer", "-p$${MYSQL_PASSWORD:-changeme}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─── Backend ─────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mynxdialer_backend
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DB_HOST: mysql
+      NODE_ENV: production
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./asterisk/conf:/app/asterisk/conf
+      - asterisk_monitor:/var/spool/asterisk/monitor:ro
+    ports:
+      - "5000:5000"
+    networks:
+      - dialer_net
+    depends_on:
+      mysql:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # ─── Frontend Admin ───────────────────────────────────────────────────────────
+  frontend-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: mynxdialer_admin
+    restart: unless-stopped
+    ports:
+      - "3000:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - dialer_net
+    depends_on:
+      - backend
+
+  # ─── Frontend Agent ───────────────────────────────────────────────────────────
+  frontend-agent:
+    build:
+      context: ./frontend-agent
+      dockerfile: Dockerfile
+    container_name: mynxdialer_agent
+    restart: unless-stopped
+    ports:
+      - "3001:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - dialer_net
+    depends_on:
+      - backend
+
+  # ─── Frontend Trainee (listen-only training portal) ──────────────────────────
+  # Separate container so trainee changes never require rebuilding the agent or
+  # admin app — deploy with:
+  #   docker compose up -d --build --no-deps frontend-trainee
+  # (--no-deps matters: without it the backend restarts and dispatch pauses.)
+  frontend-trainee:
+    build:
+      context: ./frontend-trainee
+      dockerfile: Dockerfile
+    container_name: mynxdialer_trainee
+    restart: unless-stopped
+    ports:
+      - "3002:443"
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro
+    networks:
+      - dialer_net
+    depends_on:
+      - backend
+
+# ─── NOTE: Asterisk runs on the HOST machine, NOT in Docker ─────────────────
+# This is required because Asterisk needs direct access to network interfaces
+# for SIP signaling and RTP media. The backend connects to it via host network.
+# See README.md for Asterisk installation instructions.
+
+  # ─── Asterisk PBX (for local testing with real SIP calls) ───────────────────
+  asterisk:
+    build:
+      context: ./asterisk
+      dockerfile: Dockerfile
+    container_name: mynxdialer_asterisk
+    restart: unless-stopped
+    ports:
+      - "5060:5060/udp"
+      - "5060:5060/tcp"
+      - "8088:8088/tcp"
+      - "5038:5038/tcp"
+      - "10000-10100:10000-10100/udp"
+    networks:
+      - dialer_net
+    volumes:
+      - ./asterisk/conf/pjsip.conf:/etc/asterisk/pjsip.conf
+      - ./asterisk/conf/extensions.conf:/etc/asterisk/extensions.conf
+      - ./asterisk/conf/manager.conf:/etc/asterisk/manager.conf
+      - ./asterisk/conf/http.conf:/etc/asterisk/http.conf
+      - ./asterisk/conf/rtp.conf:/etc/asterisk/rtp.conf
+      - ./asterisk/conf/queues.conf:/etc/asterisk/queues.conf
+      - ./asterisk/conf/confbridge.conf:/etc/asterisk/confbridge.conf
+      - ./asterisk/conf/musiconhold.conf:/etc/asterisk/musiconhold.conf
+      - ./asterisk/moh:/usr/share/asterisk/moh
+      - asterisk_sounds:/usr/share/asterisk/sounds
+      - asterisk_monitor:/var/spool/asterisk/monitor
+    healthcheck:
+      test: ["CMD", "asterisk", "-rx", "core show version"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+networks:
+  dialer_net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  asterisk_sounds:
+  asterisk_monitor:

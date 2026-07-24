@@ -1,0 +1,252 @@
+/* MynxDialer Trainee portal — matches the dark purple admin/agent theme. */
+:root {
+  --bg:        #140f1f;
+  --bg-2:      #1b1430;
+  --panel:     #221a3a;
+  --panel-s:   #241a3d;
+  --line:      #33265a;
+  --text:      #ece7f7;
+  --muted:     #9d92b8;
+  --accent:    #a855f7;
+  --accent-2:  #7c3aed;
+  --live:      #22c55e;
+  --danger:    #ef4444;
+  --amber:     #f59e0b;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 10% -10%, #3b1d6e 0%, transparent 55%),
+              radial-gradient(900px 500px at 110% 110%, #6d216b 0%, transparent 55%),
+              var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+}
+
+.tr-app { display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── Top bar ─────────────────────────────────────────────────────────────── */
+.tr-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  padding: 12px 18px;
+  background: rgba(20, 15, 31, .82);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(8px);
+}
+.tr-brand { display: flex; align-items: center; gap: 10px; }
+.tr-logo  { font-weight: 800; font-size: 19px; letter-spacing: .2px; color: #e9d5ff; }
+.tr-badge {
+  font-size: 10px; font-weight: 800; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #fff;
+}
+.tr-top-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.tr-user { color: var(--muted); font-size: 13px; }
+
+.tr-pill {
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line);
+}
+.tr-pill-grey  { color: var(--muted); }
+.tr-pill-amber { color: var(--amber);  border-color: #63451a; }
+.tr-pill-green { color: var(--live);   border-color: #1f5136; }
+.tr-pill-red   { color: var(--danger); border-color: #6b2330; }
+.tr-pill-live  { color: #fff; background: var(--live); border-color: transparent; }
+
+/* ── Banner / errors ─────────────────────────────────────────────────────── */
+.tr-listen-banner {
+  padding: 9px 18px; font-size: 13px; color: #d9c9ff;
+  background: linear-gradient(90deg, rgba(168,85,247,.16), rgba(124,58,237,.06));
+  border-bottom: 1px solid var(--line);
+}
+.tr-error {
+  margin: 10px 18px 0; padding: 10px 14px; border-radius: 10px; cursor: pointer;
+  background: rgba(239,68,68,.12); border: 1px solid #6b2330; color: #ffd9dd;
+  font-size: 13px; display: flex; justify-content: space-between; gap: 10px;
+}
+.tr-error-x { opacity: .6; }
+
+/* ── Layout ──────────────────────────────────────────────────────────────── */
+.tr-main {
+  flex: 1; display: grid; gap: 14px; padding: 14px 18px 22px;
+  grid-template-columns: 300px minmax(0, 1fr) 340px;
+  align-items: start;
+}
+@media (max-width: 1180px) {
+  .tr-main { grid-template-columns: 260px minmax(0, 1fr); }
+  .tr-col-notes { grid-column: 1 / -1; }
+}
+@media (max-width: 820px) {
+  .tr-main { grid-template-columns: 1fr; }
+  .tr-col-notes, .tr-col-agents, .tr-col-center { grid-column: auto; }
+}
+
+.tr-panel {
+  background: linear-gradient(180deg, rgba(36,26,61,.92), rgba(27,20,48,.92));
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.tr-panel-pad { padding: 16px 18px; }
+.tr-panel-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--line);
+}
+.tr-panel-head h3 { margin: 0; font-size: 14px; letter-spacing: .3px; }
+.tr-count {
+  font-size: 11px; color: var(--muted);
+  background: rgba(255,255,255,.05); padding: 2px 8px; border-radius: 999px;
+}
+.tr-group-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 1.1px;
+  color: var(--muted); padding: 12px 16px 6px;
+}
+.tr-empty { color: var(--muted); font-size: 13px; padding: 14px 16px; margin: 0; }
+.tr-muted { color: var(--muted); }
+
+/* ── Agents ──────────────────────────────────────────────────────────────── */
+.tr-agent {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid rgba(51,38,90,.5);
+}
+.tr-agent:last-child { border-bottom: none; }
+.tr-agent.is-active { background: rgba(168,85,247,.14); }
+.tr-agent-main { min-width: 0; }
+.tr-agent-name {
+  font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 7px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.tr-agent-meta { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+.tr-dot-live {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--live);
+  box-shadow: 0 0 0 0 rgba(34,197,94,.6); animation: trPulse 1.8s infinite;
+  flex: none;
+}
+@keyframes trPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+.tr-btn {
+  border: 1px solid transparent; border-radius: 9px; cursor: pointer;
+  font-size: 12.5px; font-weight: 700; padding: 7px 13px;
+  transition: transform .06s ease, filter .15s ease;
+}
+.tr-btn:active { transform: translateY(1px); }
+.tr-btn:disabled { opacity: .45; cursor: not-allowed; }
+.tr-btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #fff; }
+.tr-btn-listen  { background: rgba(168,85,247,.18); color: #e9d5ff; border-color: #4b2f7a; }
+.tr-btn-listen:hover:not(:disabled) { filter: brightness(1.25); }
+.tr-btn-stop    { background: rgba(239,68,68,.18); color: #ffd9dd; border-color: #6b2330; }
+.tr-btn-ghost   { background: transparent; color: var(--muted); border-color: var(--line); }
+
+/* ── Lead sheet ──────────────────────────────────────────────────────────── */
+.tr-lead-head {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.tr-lead-head h2 { margin: 0; font-size: 20px; }
+.tr-live-tag { color: var(--live); font-size: 11px; font-weight: 800; letter-spacing: .6px; }
+.tr-chip {
+  font-size: 11px; color: #d9c9ff; background: rgba(168,85,247,.16);
+  border: 1px solid #4b2f7a; padding: 3px 9px; border-radius: 999px;
+}
+.tr-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tr-field {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(51,38,90,.6);
+  border-radius: 10px; padding: 9px 11px; min-width: 0;
+}
+.tr-field-label {
+  font-size: 10px; text-transform: uppercase; letter-spacing: .8px;
+  color: var(--muted); margin-bottom: 3px;
+}
+.tr-field-label em { font-style: normal; opacity: .75; text-transform: none; letter-spacing: 0; }
+.tr-field-value { font-size: 14px; word-break: break-word; }
+
+.tr-waiting { text-align: center; padding: 34px 10px; }
+.tr-waiting p { margin: 6px 0; font-size: 14px; }
+.tr-waiting-pulse {
+  width: 12px; height: 12px; border-radius: 50%; margin: 0 auto 14px;
+  background: var(--accent); animation: trPulse 1.8s infinite;
+}
+
+/* ── Tabs / script ───────────────────────────────────────────────────────── */
+.tr-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.tr-tab {
+  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  color: var(--muted); border-radius: 9px 9px 0 0; padding: 8px 16px;
+  font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.tr-tab.is-active {
+  color: #fff; background: rgba(168,85,247,.2); border-color: #4b2f7a;
+}
+.tr-script {
+  white-space: pre-wrap; line-height: 1.65; font-size: 14.5px;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(51,38,90,.6);
+  border-radius: 10px; padding: 16px; max-height: 62vh; overflow: auto;
+}
+
+/* ── Notes ───────────────────────────────────────────────────────────────── */
+.tr-note-form { padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.tr-textarea {
+  width: 100%; resize: vertical; border-radius: 10px; padding: 10px 12px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--line);
+  color: var(--text); font-family: inherit; font-size: 13.5px; line-height: 1.5;
+}
+.tr-textarea:focus { outline: none; border-color: var(--accent); }
+.tr-note-actions {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-top: 9px;
+}
+.tr-hint { font-size: 11px; color: var(--muted); }
+.tr-notes { max-height: 52vh; overflow: auto; }
+.tr-note { padding: 12px 16px; border-bottom: 1px solid rgba(51,38,90,.5); }
+.tr-note-body { font-size: 13.5px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.tr-note-meta { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.tr-note-tools { display: flex; gap: 12px; margin-top: 7px; }
+.tr-note-tools button {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 11.5px; padding: 0; text-decoration: underline;
+}
+.tr-note-tools button:hover { color: var(--text); }
+
+/* ── Login ───────────────────────────────────────────────────────────────── */
+.tr-login-wrap { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+.tr-login {
+  width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 11px;
+  background: linear-gradient(180deg, rgba(36,26,61,.95), rgba(27,20,48,.95));
+  border: 1px solid var(--line); border-radius: 16px; padding: 28px 24px;
+}
+.tr-login-brand { display: flex; align-items: center; gap: 10px; justify-content: center; }
+.tr-login-sub { text-align: center; color: var(--muted); font-size: 12.5px; margin: 0 0 6px; }
+.tr-input {
+  border-radius: 10px; padding: 11px 13px; font-size: 14px;
+  background: rgba(255,255,255,.04); border: 1px solid var(--line); color: var(--text);
+}
+.tr-input:focus { outline: none; border-color: var(--accent); }
+.tr-login-err {
+  background: rgba(239,68,68,.12); border: 1px solid #6b2330; color: #ffd9dd;
+  border-radius: 9px; padding: 8px 11px; font-size: 12.5px;
+}
+.tr-powered {
+  text-align: center; margin: 4px 0 0; font-size: 11px; letter-spacing: .4px;
+  color: var(--muted); opacity: .7;
+}
+.tr-powered strong { color: #d9c9ff; }
+.tr-login-logo {
+  display: block; width: 72px; height: 72px; object-fit: contain;
+  margin: 0 auto 12px;
+}
+/* Persistent, subtle brand watermark — fixed to the viewport so it stays on
+   the dialer at all times without getting in the way of the UI. */
+.tr-watermark {
+  position: fixed; bottom: 14px; right: 16px; width: 40px; height: 40px;
+  object-fit: contain; opacity: 0.14; pointer-events: none; z-index: 5;
+  user-select: none;
+}

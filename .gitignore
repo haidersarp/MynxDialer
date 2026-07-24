@@ -1,0 +1,56 @@
+# ── Secrets — NEVER commit ──────────────────────────────────
+# Environment files (DB password, JWT secret, carrier creds)
+**/.env
+.env
+**/.env.bak*
+# keep the templates so a fresh clone knows what to fill in
+!**/.env.example
+
+# TLS private keys / certs
+ssl/
+*.key
+*.crt
+*.pem
+
+# Asterisk live config that carries carrier trunk credentials + your public IP.
+# Regenerated from the DB at runtime, so it never needs to be in the repo.
+asterisk/conf/pjsip.conf
+asterisk/conf/sip.conf
+asterisk/conf/*.bak*
+asterisk/conf/*.preMulti.bak
+
+# Music-on-hold audio (ship only rights-cleared files you add yourself)
+asterisk/moh/*.wav
+asterisk/moh/*.mp3
+
+# Uploaded customer lead files (PII) and call recordings
+backend/uploads/
+recordings/
+*.wav
+*.mp3
+
+# ── Build artifacts & dependencies ──────────────────────────
+**/node_modules/
+**/build/
+**/dist/
+
+# ── Backups, logs, dumps, runtime noise ─────────────────────
+*.bak
+*.bak.*
+*.bak_*
+*_BACKUP_*
+*.LIVE_BACKUP*
+*-log.txt
+_runlogs/
+*.log
+*.sql.gz
+*_backup*.sql
+
+# ── Local MySQL data, if any ────────────────────────────────
+mysql/data/
+
+# ── OS / editor ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
