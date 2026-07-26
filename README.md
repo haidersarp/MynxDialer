@@ -15,7 +15,7 @@ Node.js, React, Asterisk and MySQL, and the whole thing comes up with a single
 
 ---
 
-## Why MynxDialer instead of ViciDial?
+## Why use MynxDialer?
 
 If you've looked into open-source dialing before, you've met ViciDial. It's
 powerful and battle-tested — and it's also a lot. A sprawling Perl/PHP codebase,
@@ -39,8 +39,48 @@ MynxDialer is built for the other end of that scale:
   won't touch.
 
 Same core idea as the big platforms; a fraction of the setup and none of the
-headache. If ViciDial's install guide has ever made you close the tab, start
-here.
+headache.
+
+## Architecture
+
+Three small React apps talk to one Node backend over REST and Socket.IO. The
+backend drives Asterisk over AMI to place and bridge calls, and stores
+everything in MySQL. Agents' browsers connect straight to Asterisk for audio
+(WebRTC), with coturn helping media through NAT.
+
+```mermaid
+flowchart TB
+    subgraph browser["In the browser"]
+        ADMIN["Admin console<br/>:3000"]
+        AGENT["Agent softphone<br/>:3001"]
+        TRAINEE["Trainee portal<br/>:3002"]
+    end
+
+    ADMIN -->|REST + Socket.IO| BE
+    AGENT -->|REST + Socket.IO| BE
+    TRAINEE -->|REST + Socket.IO| BE
+
+    BE["Backend<br/>Node · Express · dialer engine<br/>:5000"]
+    DB[("MySQL")]
+    AST["Asterisk PBX<br/>SIP · WebRTC · ConfBridge"]
+    TURN["coturn<br/>STUN / TURN"]
+    CARRIER["Your carrier"]
+
+    BE <-->|AMI| AST
+    BE --> DB
+    AST <--> TURN
+    AST -->|SIP trunk| CARRIER
+    AGENT -.->|WebRTC audio| AST
+    TRAINEE -.->|listen-only audio| AST
+```
+
+- **backend** — Express API, Socket.IO, and the dialer engine that originates
+  calls over Asterisk AMI, paces them predictively, and connects answered calls
+  to available agents.
+- **Asterisk** — the PBX: SIP registration, WebRTC for agents' browsers,
+  conferences (ConfBridge), and the outbound trunk to your carrier.
+- **coturn** — STUN/TURN so browsers behind NAT get working two-way audio.
+- **MySQL** — all application data.
 
 ## Features
 
@@ -111,47 +151,6 @@ Browser-based WebRTC softphone — campaign script, lead sheet, dispositions, bo
 Trainees shadow any agent with a silent listen line, live lead sheet, script and note-taking.
 
 ![Trainee portal](docs/screenshots/trainee-02-panel.png)
-
-## Architecture
-
-Three small React apps talk to one Node backend over REST and Socket.IO. The
-backend drives Asterisk over AMI to place and bridge calls, and stores
-everything in MySQL. Agents' browsers connect straight to Asterisk for audio
-(WebRTC), with coturn helping media through NAT.
-
-```mermaid
-flowchart TB
-    subgraph browser["In the browser"]
-        ADMIN["Admin console<br/>:3000"]
-        AGENT["Agent softphone<br/>:3001"]
-        TRAINEE["Trainee portal<br/>:3002"]
-    end
-
-    ADMIN -->|REST + Socket.IO| BE
-    AGENT -->|REST + Socket.IO| BE
-    TRAINEE -->|REST + Socket.IO| BE
-
-    BE["Backend<br/>Node · Express · dialer engine<br/>:5000"]
-    DB[("MySQL")]
-    AST["Asterisk PBX<br/>SIP · WebRTC · ConfBridge"]
-    TURN["coturn<br/>STUN / TURN"]
-    CARRIER["Your carrier"]
-
-    BE <-->|AMI| AST
-    BE --> DB
-    AST <--> TURN
-    AST -->|SIP trunk| CARRIER
-    AGENT -.->|WebRTC audio| AST
-    TRAINEE -.->|listen-only audio| AST
-```
-
-- **backend** — Express API, Socket.IO, and the dialer engine that originates
-  calls over Asterisk AMI, paces them predictively, and connects answered calls
-  to available agents.
-- **Asterisk** — the PBX: SIP registration, WebRTC for agents' browsers,
-  conferences (ConfBridge), and the outbound trunk to your carrier.
-- **coturn** — STUN/TURN so browsers behind NAT get working two-way audio.
-- **MySQL** — all application data.
 
 ## Quick start (local / evaluation)
 
